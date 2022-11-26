@@ -7,12 +7,32 @@ exports.updateCommands = async () => {
       description: "Replies with Pong!",
     },
     {
-      name: "updatecommand",
+      name: "sync",
       description: "Manually latest sync command!",
     },
     {
       name: "join",
       description: "Join to voice channel",
+    },
+    {
+      name: "status",
+      description: "Console.log voice status to server",
+    },
+    {
+      name: "leave",
+      description: "Join to voice channel",
+    },
+    {
+      name: "play",
+      description: "Play something",
+      options: [
+        {
+          type: 3,
+          name: "keywords",
+          description: "Keywords",
+          required: true,
+        },
+      ],
     },
     {
       name: "stop",
@@ -25,10 +45,6 @@ exports.updateCommands = async () => {
     {
       name: "unpause",
       description: "Unpause and continue music",
-    },
-    {
-      name: "status",
-      description: "Show debug informations",
     },
   ];
 

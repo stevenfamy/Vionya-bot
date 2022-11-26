@@ -1,5 +1,6 @@
 require("dotenv").config();
 const { Client, GuildMember, GatewayIntentBits } = require("discord.js");
+const { commandControl } = require("./app/controller/command-control");
 const { messageControl } = require("./app/controller/message-control");
 const { updateCommands } = require("./app/controller/update-command");
 const client = new Client({
@@ -18,15 +19,16 @@ client.on("ready", async () => {
 });
 
 client.on("interactionCreate", async (interaction) => {
-  if (!interaction.isChatInputCommand()) return;
-
-  if (interaction.commandName === "ping") {
-    await interaction.reply("Pong!");
-  }
-
-  if (interaction.commandName === "updatecommand") {
-    await updateCommands();
-    await interaction.reply("✅ Command Synched!");
+  try {
+    const User = await client.users.fetch(interaction.user);
+    const guild = await client.guilds.cache.get(interaction.guildId);
+    const member = await guild.members.fetch(User.id);
+    const currentVoiceChannel = member.voice.channel?.id
+      ? await client.channels.fetch(member.voice.channel.id)
+      : null;
+    await commandControl(interaction, currentVoiceChannel);
+  } catch (e) {
+    console.log(e);
   }
 });
 

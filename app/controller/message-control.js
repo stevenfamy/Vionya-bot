@@ -12,43 +12,42 @@ const {
 const prefix = "vy";
 
 exports.messageControl = async (msg, currentVoiceChannel) => {
-  if (msg.author.id == process.env.CLIENTID) return null;
+  if (msg.author.id == process.env.CLIENTID) return;
+  let args = msg.content.slice(prefix.length).split(" ");
+  if (!msg.content.startsWith(prefix)) return;
+  console.log(args);
   let reply = null;
 
-  if (
-    msg.content.toLocaleLowerCase().includes("bot") &&
-    msg.content.toLocaleLowerCase().includes("hey")
-  ) {
-    reply = "Sup";
-  } else if (msg.content.toLocaleLowerCase().includes("ping")) {
-    reply = "おいしい";
-  } else if (msg.content.toLocaleLowerCase() == `${prefix} sync`) {
+  if (args[1].toLowerCase() === "ping") {
+    reply = "Pong!";
+  } else if (args[1].toLowerCase() === "sync") {
     await updateCommands();
-    reply = "✅ Command Synched!";
-  } else if (msg.content.toLocaleLowerCase() == `${prefix} join`) {
+    reply = "Ok, Command successfully synched!";
+  } else if (args[1].toLowerCase() === "join") {
     reply = await doJoinVoice(msg, currentVoiceChannel);
-  } else if (msg.content.toLocaleLowerCase() == `${prefix} status`) {
+  } else if (args[1].toLowerCase() === "status") {
     await showVoiceStatus(msg);
     // reply = "✅ Command Synched!";
-  } else if (msg.content.toLocaleLowerCase() == `${prefix} leave`) {
+  } else if (args[1].toLowerCase() === "leave") {
     await musicStop(msg);
     await leaveVoice(msg);
-    reply = "後でまた話しましょう、さようなら。";
-  } else if (msg.content.toLocaleLowerCase() == `${prefix} play local`) {
-    await playLocal(msg);
-    // reply = "✅ Command Synched!";
-  } else if (msg.content.toLocaleLowerCase() == `${prefix} stop`) {
-    await musicStop(msg);
-    reply = "音楽が止まった。";
-  } else if (msg.content.toLocaleLowerCase() == `${prefix} pause`) {
-    await musicPause(msg);
-    reply = "音楽を一時停止しました。";
-  } else if (msg.content.toLocaleLowerCase() == `${prefix} unpause`) {
-    await musicUnpause(msg);
-    reply = "音楽再開。";
-  } else if (msg.content.toLocaleLowerCase().includes(`${prefix} `)) {
-    const temp = msg.content.split("vy");
-    reply = await playTube(msg, temp[1].trim());
+    reply = "We'll have a talk again later, bye";
+  } else if (args[1].toLowerCase() === "play") {
+    if (args[2].toLowerCase() === "special") {
+      await playLocal(msg);
+    } else {
+      const keyword = msg.content.slice(prefix.length).split("play")[1].trim();
+      reply = await playTube(msg, keyword, currentVoiceChannel);
+    }
+  } else if (args[1].toLowerCase() === "stop") {
+    const res = await musicStop(msg);
+    reply = res ? "Music stopped" : "Sorry, nothing can be stopped.";
+  } else if (args[1].toLowerCase() === "pause") {
+    const res = await musicPause(msg);
+    reply = res ? "Music paused" : "Sorry, nothing can be paused.";
+  } else if (args[1].toLowerCase() === "unpause") {
+    const res = await musicUnpause(msg);
+    reply = res ? "Music resumed" : "Sorry, nothing can be resumed.";
   }
 
   return reply;

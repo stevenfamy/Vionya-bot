@@ -9,9 +9,19 @@ const {
   createAudioResource,
 } = require("@discordjs/voice");
 const play = require("play-dl");
+const URL = require("url").URL;
 let audioPlayer;
 
-exports.doJoinVoice = async (msg, currentVoiceChannel) => {
+const stringIsAValidUrl = (s) => {
+  try {
+    new URL(s);
+    return true;
+  } catch (err) {
+    return false;
+  }
+};
+
+exports.doJoinVoice = async (msg, currentVoiceChannel, command = false) => {
   if (!currentVoiceChannel) return "Sorry, you're not in a **voice channel**.";
   //   console.log(generateDependencyReport());
   console.log("Init Join Voice Channel", currentVoiceChannel);
@@ -24,13 +34,12 @@ exports.doJoinVoice = async (msg, currentVoiceChannel) => {
         adapterCreator: currentVoiceChannel.guild.voiceAdapterCreator,
         selfDeaf: true,
         selfMute: false,
-        debug: true,
       });
 
       audioPlayer = createAudioPlayer();
       connection.subscribe(audioPlayer);
 
-      return `Joining channel **${currentVoiceChannel.name}**`;
+      return command ? true : `Joining channel **${currentVoiceChannel.name}**`;
     } else {
       console.log("Connection", connection.joinConfig);
       if (
@@ -82,44 +91,69 @@ exports.playLocal = async () => {
 };
 
 exports.musicStop = async () => {
+  if (!audioPlayer) return false;
   try {
     audioPlayer.stop();
+    return true;
   } catch (e) {
     console.log(e);
   }
 };
 
 exports.musicPause = async () => {
+  if (!audioPlayer) return false;
   try {
     audioPlayer.pause();
+    return true;
   } catch (e) {
     console.log(e);
   }
 };
 
 exports.musicUnpause = async () => {
+  if (!audioPlayer) return false;
   try {
     audioPlayer.unpause();
+    return true;
   } catch (e) {
     console.log(e);
   }
 };
 
-exports.playTube = async (msg, search) => {
+exports.playTube = async (msg, search, currentVoiceChannel) => {
   try {
+    if (!audioPlayer) {
+      const res = await this.doJoinVoice(msg, currentVoiceChannel, true);
+      if (res != true) {
+        return res;
+      }
+    }
     console.log("arg", search);
-    let yt_info = await play.search(search, {
-      limit: 1,
-    });
+    let stream;
+    let yt_info;
+    const isURL = stringIsAValidUrl(search);
+    if (isURL) {
+      stream = await play.stream(search);
+      console.log("start", search);
+    } else {
+      yt_info = await play.search(search, {
+        limit: 1,
+      });
 
-    let stream = await play.stream(yt_info[0].url);
-    console.log("start", yt_info[0].url);
+      stream = await play.stream(yt_info[0].url);
+      console.log("start", yt_info[0].url);
+    }
+
     let resource = createAudioResource(stream.stream, {
       inputType: stream.type,
+      inlineVolume: true,
     });
+    resource.volume.setVolume(0.5);
     audioPlayer.play(resource);
 
-    return `I'm playing "${search}" from ${yt_info[0].url}`;
+    return isURL
+      ? `I'm playing "${search}"`
+      : `I'm playing "${search}" from ${yt_info[0].url}`;
   } catch (e) {
     console.log(e);
   }
