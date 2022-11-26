@@ -10,6 +10,26 @@ exports.updateCommands = async () => {
       name: "updatecommand",
       description: "Manually latest sync command!",
     },
+    {
+      name: "join",
+      description: "Join to voice channel",
+    },
+    {
+      name: "stop",
+      description: "Stop all music",
+    },
+    {
+      name: "pause",
+      description: "Pause current music",
+    },
+    {
+      name: "unpause",
+      description: "Unpause and continue music",
+    },
+    {
+      name: "status",
+      description: "Show debug informations",
+    },
   ];
 
   const rest = new REST({ version: "10" }).setToken(process.env.TOKEN);
