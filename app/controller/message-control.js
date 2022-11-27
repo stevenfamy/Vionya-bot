@@ -48,7 +48,28 @@ exports.messageControl = async (msg, currentVoiceChannel) => {
   } else if (args[1].toLowerCase() === "unpause") {
     const res = await musicUnpause(msg);
     reply = res ? "Music resumed" : "Sorry, nothing can be resumed.";
+  } else if (args[1].toLowerCase() === "help") {
+    reply = `**Command List:** 
+    **vy ping** -> Reply with Pong!
+    **vy sync** -> Sync slash command with server!
+    **vy join** -> Join to your voice channel
+    **vy leave** -> Leave the voice channel
+    **vy play keywords/url** -> Play song from YT using search or URL
+    **vy stop** -> Stop current song
+    **vy pause** -> Pause current song
+    **vy unpause** -> Resume current song
+    **vy status** -> Show debug info
+    **vy about** -> Show Bot info
+    
+    Or you can use slash command (/)
+    `;
   }
+  //   } else if (args[1].toLowerCase() === "about") {
+  //     reply = `**Viona**
+  //     Creator: cainx#6666 | steve.mailme@gmail.com
+  //     Sourcecode: https://github.com/stevenfamy/Vionya-bot
+  //     `;
+  //   }
 
   return reply;
 };
