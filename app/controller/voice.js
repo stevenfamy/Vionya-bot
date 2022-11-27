@@ -131,7 +131,7 @@ exports.playTube = async (msg, search, currentVoiceChannel) => {
     if (search.startsWith("https") && play.yt_validate(search) === "video") {
       stream = await play.stream(search);
       console.log("start", search);
-    } else {
+    } else if (play.yt_validate(search) === "search") {
       yt_info = await play.search(search, {
         limit: 1,
       });
