@@ -1,0 +1,14 @@
+version: "3.3"
+
+services:
+  vionya-backend-main:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: stevenfamy/vionya-backend-latest:latest
+    container_name: vionya-backend-main
+    volumes:
+      - ~/vionya-backend:/home/node/app/store
+    restart: unless-stopped
+    env_file:
+      - .env
