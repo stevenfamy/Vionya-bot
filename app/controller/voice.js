@@ -9,17 +9,13 @@ const {
   createAudioResource,
 } = require("@discordjs/voice");
 const play = require("play-dl");
-const URL = require("url").URL;
 let audioPlayer;
 
-const stringIsAValidUrl = (s) => {
-  try {
-    new URL(s);
-    return true;
-  } catch (err) {
-    return false;
-  }
-};
+play.setToken({
+  youtube: {
+    cookie: process.env.YTCOOKIES,
+  },
+});
 
 exports.doJoinVoice = async (msg, currentVoiceChannel, command = false) => {
   if (!currentVoiceChannel) return "Sorry, you're not in a **voice channel**.";
@@ -131,8 +127,8 @@ exports.playTube = async (msg, search, currentVoiceChannel) => {
     console.log("arg", search);
     let stream;
     let yt_info;
-    const isURL = stringIsAValidUrl(search);
-    if (isURL) {
+    const isURL = play.yt_validate(search);
+    if (search.startsWith("https") && play.yt_validate(search) === "video") {
       stream = await play.stream(search);
       console.log("start", search);
     } else {
@@ -151,7 +147,7 @@ exports.playTube = async (msg, search, currentVoiceChannel) => {
     resource.volume.setVolume(0.5);
     audioPlayer.play(resource);
 
-    return isURL
+    return isURL === "video" && search.startsWith("https")
       ? `I'm playing "${search}"`
       : `I'm playing "${search}" from ${yt_info[0].url}`;
   } catch (e) {
