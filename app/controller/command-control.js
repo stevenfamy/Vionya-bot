@@ -8,6 +8,7 @@ const {
   musicStop,
   musicUnpause,
   playTube,
+  nowPlaying,
 } = require("./voice");
 
 exports.commandControl = async (interaction, currentVoiceChannel) => {
@@ -49,5 +50,8 @@ exports.commandControl = async (interaction, currentVoiceChannel) => {
     await interaction.reply(
       res ? "Music resumed" : "Sorry, nothing can be resumed."
     );
+  } else if (interaction.commandName === "nowplaying") {
+    const res = await nowPlaying(interaction);
+    await interaction.reply(res ? res : "Sorry, Currently nothing is playing.");
   }
 };

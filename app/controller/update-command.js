@@ -46,6 +46,10 @@ exports.updateCommands = async () => {
       name: "unpause",
       description: "Unpause and continue music",
     },
+    {
+      name: "nowplaying",
+      description: "Show current now playing and next queue",
+    },
   ];
 
   const rest = new REST({ version: "10" }).setToken(process.env.TOKEN);

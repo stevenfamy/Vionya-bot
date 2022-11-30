@@ -9,7 +9,9 @@ const {
   createAudioResource,
 } = require("@discordjs/voice");
 const play = require("play-dl");
+const getYoutubeTitle = require("get-youtube-title-await");
 let audioPlayer;
+let currentVid = "";
 
 play.setToken({
   youtube: {
@@ -70,6 +72,8 @@ exports.showVoiceStatus = async (msg) => {
 
 exports.leaveVoice = async (msg) => {
   try {
+    audioPlayer.stop();
+    currentVid = "";
     const connection = getVoiceConnection(msg.guildId);
     if (connection) connection.destroy();
   } catch (e) {
@@ -90,6 +94,7 @@ exports.musicStop = async () => {
   if (!audioPlayer) return false;
   try {
     audioPlayer.stop();
+    currentVid = "";
     return true;
   } catch (e) {
     console.log(e);
@@ -128,18 +133,22 @@ exports.playTube = async (msg, search, currentVoiceChannel) => {
     let stream;
     let yt_info;
     const isURL = play.yt_validate(search);
+    let ytUrl = "";
+    let vId = "";
     if (search.startsWith("https") && play.yt_validate(search) === "video") {
-      stream = await play.stream(search);
+      ytUrl = search;
       console.log("start", search);
     } else if (play.yt_validate(search) === "search") {
       yt_info = await play.search(search, {
         limit: 1,
       });
-
-      stream = await play.stream(yt_info[0].url);
+      ytUrl = yt_info[0].url;
       console.log("start", yt_info[0].url);
     }
-
+    vId = ytUrl.split("?v=")[1];
+    currentVid = vId;
+    console.log("Video Id", vId);
+    stream = await play.stream(ytUrl);
     let resource = createAudioResource(stream.stream, {
       inputType: stream.type,
       inlineVolume: true,
@@ -150,6 +159,16 @@ exports.playTube = async (msg, search, currentVoiceChannel) => {
     return isURL === "video" && search.startsWith("https")
       ? `I'm playing "${search}"`
       : `I'm playing "${search}" from ${yt_info[0].url}`;
+  } catch (e) {
+    console.log(e);
+  }
+};
+
+exports.nowPlaying = async (msg) => {
+  try {
+    if (!audioPlayer) return false;
+    const videoTitle = await getYoutubeTitle(currentVid);
+    return `Currently I'm playing ${videoTitle}`;
   } catch (e) {
     console.log(e);
   }

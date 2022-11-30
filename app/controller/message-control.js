@@ -8,6 +8,7 @@ const {
   musicStop,
   musicUnpause,
   playTube,
+  nowPlaying,
 } = require("./voice");
 const prefix = "vy";
 
@@ -48,6 +49,9 @@ exports.messageControl = async (msg, currentVoiceChannel) => {
   } else if (args[1].toLowerCase() === "unpause") {
     const res = await musicUnpause(msg);
     reply = res ? "Music resumed" : "Sorry, nothing can be resumed.";
+  } else if (args[1].toLowerCase() === "nowplaying") {
+    const res = await nowPlaying(msg);
+    reply = res ? res : "Sorry, Currently nothing is playing.";
   } else if (args[1].toLowerCase() === "help") {
     reply = `**Command List:** 
     **vy ping** -> Reply with Pong!
