@@ -12,3 +12,9 @@ services:
     restart: unless-stopped
     env_file:
       - .env
+    networks:
+      - neptune-db
+
+networks:
+  neptune-db:
+    external: true
