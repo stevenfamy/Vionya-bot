@@ -6,9 +6,10 @@ const {
   playLocal,
   musicPause,
   musicStop,
-  musicUnpause,
+  musicResume,
   playTube,
   nowPlaying,
+  addNewQueue,
 } = require("./voice");
 const prefix = "vy";
 
@@ -46,8 +47,8 @@ exports.messageControl = async (msg, currentVoiceChannel) => {
   } else if (args[1].toLowerCase() === "pause") {
     const res = await musicPause(msg);
     reply = res ? "Music paused" : "Sorry, nothing can be paused.";
-  } else if (args[1].toLowerCase() === "unpause") {
-    const res = await musicUnpause(msg);
+  } else if (args[1].toLowerCase() === "resume") {
+    const res = await musicResume(msg);
     reply = res ? "Music resumed" : "Sorry, nothing can be resumed.";
   } else if (args[1].toLowerCase() === "nowplaying") {
     const res = await nowPlaying(msg);
@@ -61,12 +62,15 @@ exports.messageControl = async (msg, currentVoiceChannel) => {
     **vy play keywords/url** -> Play song from YT using search or URL
     **vy stop** -> Stop current song
     **vy pause** -> Pause current song
-    **vy unpause** -> Resume current song
+    **vy resume** -> Resume current song
     **vy status** -> Show debug info
     **vy about** -> Show Bot info
     
     Or you can use slash command (/)
     `;
+  } else if (args[1].toLowerCase() === "add") {
+    const keyword = msg.content.slice(prefix.length).split("add")[1].trim();
+    reply = await addNewQueue(msg, keyword, currentVoiceChannel);
   }
   //   } else if (args[1].toLowerCase() === "about") {
   //     reply = `**Viona**

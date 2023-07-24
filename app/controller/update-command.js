@@ -43,12 +43,24 @@ exports.updateCommands = async () => {
       description: "Pause current music",
     },
     {
-      name: "unpause",
-      description: "Unpause and continue music",
+      name: "resume",
+      description: "Resume music",
     },
     {
       name: "nowplaying",
       description: "Show current now playing and next queue",
+    },
+    {
+      name: "add",
+      description: "Add song to queue.",
+      options: [
+        {
+          type: 3,
+          name: "keywords",
+          description: "Keywords",
+          required: true,
+        },
+      ],
     },
   ];
 

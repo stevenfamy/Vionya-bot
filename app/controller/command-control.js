@@ -6,9 +6,10 @@ const {
   playLocal,
   musicPause,
   musicStop,
-  musicUnpause,
+  musicResume,
   playTube,
   nowPlaying,
+  addNewQueue,
 } = require("./voice");
 
 exports.commandControl = async (interaction, currentVoiceChannel) => {
@@ -45,13 +46,23 @@ exports.commandControl = async (interaction, currentVoiceChannel) => {
     await interaction.reply(
       res ? "Music paused" : "Sorry, nothing can be paused."
     );
-  } else if (interaction.commandName === "unpause") {
-    const res = await musicUnpause(interaction);
+  } else if (interaction.commandName === "resume") {
+    const res = await musicResume(interaction);
     await interaction.reply(
       res ? "Music resumed" : "Sorry, nothing can be resumed."
     );
   } else if (interaction.commandName === "nowplaying") {
     const res = await nowPlaying(interaction);
     await interaction.reply(res ? res : "Sorry, Currently nothing is playing.");
+  } else if (interaction.commandName === "add") {
+    const keyword = interaction.options.getString("keywords").trim();
+    await interaction.reply(
+      await addNewQueue(
+        interaction,
+        keyword,
+        currentVoiceChannel,
+        interaction.user.id
+      )
+    );
   }
 };

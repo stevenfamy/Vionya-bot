@@ -1,3 +1,5 @@
+require("dotenv").config();
+const util = require("util");
 const {
   joinVoiceChannel,
   getVoiceConnection,
@@ -9,7 +11,15 @@ const {
   createAudioResource,
 } = require("@discordjs/voice");
 const play = require("play-dl");
-const { getTitle } = require("../helper/yt.helper");
+const { getTitle, getVideoIdMsg } = require("../helper/yt.helper");
+const {
+  addQueue,
+  getQueueUnplayed,
+  getQueueOldest,
+  updateQueueStatus,
+  queueCleaner,
+} = require("../helper/queue.helper");
+
 let audioPlayer;
 let currentVid = "";
 
@@ -22,7 +32,7 @@ play.setToken({
 exports.doJoinVoice = async (msg, currentVoiceChannel, command = false) => {
   if (!currentVoiceChannel) return "Sorry, you're not in a **voice channel**.";
   //   console.log(generateDependencyReport());
-  console.log("Init Join Voice Channel", currentVoiceChannel);
+  // console.log("Init Join Voice Channel", currentVoiceChannel);
   try {
     const connection = getVoiceConnection(currentVoiceChannel.guild.id);
     if (!connection) {
@@ -111,7 +121,7 @@ exports.musicPause = async () => {
   }
 };
 
-exports.musicUnpause = async () => {
+exports.musicResume = async () => {
   if (!audioPlayer) return false;
   try {
     audioPlayer.unpause();
@@ -130,35 +140,17 @@ exports.playTube = async (msg, search, currentVoiceChannel) => {
       }
     }
     console.log("arg", search);
-    let stream;
+
     let yt_info;
     const isURL = play.yt_validate(search);
-    let ytUrl = "";
-    let vId = "";
-    if (search.startsWith("https") && play.yt_validate(search) === "video") {
-      ytUrl = search;
-      console.log("start", search);
-    } else if (play.yt_validate(search) === "search") {
-      yt_info = await play.search(search, {
-        limit: 1,
-      });
-      ytUrl = yt_info[0].url;
-      console.log("start", yt_info[0].url);
-    }
-    vId = ytUrl.split("?v=")[1];
-    currentVid = vId;
-    console.log("Video Id", vId);
-    stream = await play.stream(ytUrl);
-    let resource = createAudioResource(stream.stream, {
-      inputType: stream.type,
-      inlineVolume: true,
-    });
-    resource.volume.setVolume(0.5);
-    audioPlayer.play(resource);
 
-    return isURL === "video" && search.startsWith("https")
-      ? `I'm playing "${search}"`
-      : `I'm playing "${search}" from ${yt_info[0].url}`;
+    const { vId, ytUrl } = await getVideoIdMsg(search);
+
+    console.log("Video Id", vId);
+
+    this.playStream(ytUrl);
+
+    return "";
   } catch (e) {
     console.log(e);
   }
@@ -169,8 +161,89 @@ exports.nowPlaying = async (msg) => {
     if (!audioPlayer) return false;
     const videoTitle = await getTitle(currentVid);
     if (videoTitle) return `Currently I'm playing "${videoTitle}"`;
-    if (!videoTitle) return "Error, please contact .cainx";
+    if (!videoTitle) return false;
   } catch (e) {
     console.log(e);
   }
 };
+
+exports.addNewQueue = async (msg, search, currentVoiceChannel, userId) => {
+  try {
+    console.log(msg);
+    if (!audioPlayer) {
+      const res = await this.doJoinVoice(msg, currentVoiceChannel, true);
+      if (res != true) {
+        return res;
+      }
+    }
+
+    const { vId, ytUrl } = await getVideoIdMsg(search);
+    const title = await getTitle(vId);
+
+    if (!title) return "Not Found";
+
+    const result = await addQueue(
+      vId,
+      title,
+      userId,
+      currentVoiceChannel.id,
+      msg.channelId
+    );
+
+    return result
+      ? `${title} (${ytUrl}) is added to queue.`
+      : "Failed to add queue.";
+  } catch (e) {
+    console.error(e);
+  }
+};
+
+exports.getPlayerStats = async () => {
+  const playerStatus = audioPlayer?._state.status;
+  console.log("Player stats:", playerStatus);
+  return playerStatus;
+};
+
+triggerPlaylist = async () => {
+  if ((await this.getPlayerStats()) == "idle") {
+    const unplayedCount = await getQueueUnplayed();
+    console.log("unplayedCount", unplayedCount);
+
+    if (unplayedCount <= 0) return false;
+
+    const nextTrack = await getQueueOldest();
+
+    if (!nextTrack) return false;
+
+    this.playStream(
+      `https://www.youtube.com/watch?v=${nextTrack.video_id}`,
+      nextTrack
+    );
+
+    updateQueueStatus(nextTrack.id);
+    queueCleaner();
+  }
+};
+
+exports.playStream = async (ytUrl, nextTrack) => {
+  let stream;
+  stream = await play.stream(ytUrl);
+  let resource = createAudioResource(stream.stream, {
+    inputType: stream.type,
+    inlineVolume: true,
+  });
+  resource.volume.setVolume(0.5);
+  audioPlayer.play(resource);
+
+  const channel = client.channels.cache.get(nextTrack.msg_channel_id);
+  currentVid = nextTrack.video_id;
+  channel.send(
+    `I'm playing queue "${nextTrack.title}" (https://www.youtube.com/watch?v=${nextTrack.video_id})`
+  );
+  // console.log(audioPlayer, { maxArrayLength: null });
+  // console.log(util.inspect(audioPlayer, false, null, true /* enable colors */));
+};
+
+setInterval(function () {
+  triggerPlaylist();
+}, 1000);
