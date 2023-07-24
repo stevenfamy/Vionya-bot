@@ -9,7 +9,7 @@ const {
   createAudioResource,
 } = require("@discordjs/voice");
 const play = require("play-dl");
-const getYoutubeTitle = require("get-youtube-title-await");
+const { getTitle } = require("../helper/yt.helper");
 let audioPlayer;
 let currentVid = "";
 
@@ -167,8 +167,9 @@ exports.playTube = async (msg, search, currentVoiceChannel) => {
 exports.nowPlaying = async (msg) => {
   try {
     if (!audioPlayer) return false;
-    const videoTitle = await getYoutubeTitle(currentVid);
-    return `Currently I'm playing ${videoTitle}`;
+    const videoTitle = await getTitle(currentVid);
+    if (videoTitle) return `Currently I'm playing "${videoTitle}"`;
+    if (!videoTitle) return "Error, please contact .cainx";
   } catch (e) {
     console.log(e);
   }
