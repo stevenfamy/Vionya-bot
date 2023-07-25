@@ -148,7 +148,7 @@ exports.playTube = async (msg, search, currentVoiceChannel) => {
 
     console.log("Video Id", vId);
 
-    return this.playStream(ytUrl, vId, msg.channelId, title, true);
+    return this.playStream(ytUrl, vId, msg.channelId, title, true, false);
   } catch (e) {
     console.log(e);
   }
@@ -218,7 +218,8 @@ triggerPlaylist = async () => {
       nextTrack.video_id,
       nextTrack.msg_channel_id,
       nextTrack.title,
-      false
+      false,
+      true
     );
 
     updateQueueStatus(nextTrack.id);
@@ -231,7 +232,8 @@ exports.playStream = async (
   videoId,
   msgChannelId,
   title,
-  isInteraction = false
+  isInteraction = false,
+  isQueue = false
 ) => {
   let stream;
   stream = await play.stream(ytUrl);
@@ -245,7 +247,9 @@ exports.playStream = async (
   const channel = client.channels.cache.get(msgChannelId);
   currentVid = videoId;
 
-  const msg = `I'm playing queue "${title}" (https://www.youtube.com/watch?v=${videoId})`;
+  const msg = isQueue
+    ? `Now playing queue "${title}" (https://www.youtube.com/watch?v=${videoId})`
+    : `I'm playing "${title}" (https://www.youtube.com/watch?v=${videoId})`;
   if (isInteraction) return msg;
 
   channel.send(msg);
