@@ -148,9 +148,7 @@ exports.playTube = async (msg, search, currentVoiceChannel) => {
 
     console.log("Video Id", vId);
 
-    this.playStream(ytUrl, vId, msg.channelId, title);
-
-    return "";
+    return this.playStream(ytUrl, vId, msg.channelId, title, true);
   } catch (e) {
     console.log(e);
   }
@@ -219,7 +217,8 @@ triggerPlaylist = async () => {
       `https://www.youtube.com/watch?v=${nextTrack.video_id}`,
       nextTrack.video_id,
       nextTrack.msg_channel_id,
-      nextTrack.title
+      nextTrack.title,
+      false
     );
 
     updateQueueStatus(nextTrack.id);
@@ -227,7 +226,13 @@ triggerPlaylist = async () => {
   }
 };
 
-exports.playStream = async (ytUrl, videoId, msgChannelId, title) => {
+exports.playStream = async (
+  ytUrl,
+  videoId,
+  msgChannelId,
+  title,
+  isInteraction = false
+) => {
   let stream;
   stream = await play.stream(ytUrl);
   let resource = createAudioResource(stream.stream, {
@@ -239,11 +244,11 @@ exports.playStream = async (ytUrl, videoId, msgChannelId, title) => {
 
   const channel = client.channels.cache.get(msgChannelId);
   currentVid = videoId;
-  channel.send(
-    `I'm playing queue "${title}" (https://www.youtube.com/watch?v=${videoId})`
-  );
-  // console.log(audioPlayer, { maxArrayLength: null });
-  // console.log(util.inspect(audioPlayer, false, null, true /* enable colors */));
+
+  const msg = `I'm playing queue "${title}" (https://www.youtube.com/watch?v=${videoId})`;
+  if (isInteraction) return msg;
+
+  channel.send(msg);
 };
 
 setInterval(function () {
