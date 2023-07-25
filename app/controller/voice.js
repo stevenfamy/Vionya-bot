@@ -189,7 +189,7 @@ exports.addNewQueue = async (msg, search, currentVoiceChannel, userId) => {
     );
 
     return result
-      ? `${title} (${ytUrl}) is added to queue.`
+      ? `Roger Sempai, Adding ${title} (${ytUrl}) to queue 😊😊`
       : "Failed to add queue.";
   } catch (e) {
     console.error(e);
@@ -248,8 +248,8 @@ exports.playStream = async (
   currentVid = videoId;
 
   const msg = isQueue
-    ? `Now playing queue "${title}" (https://www.youtube.com/watch?v=${videoId})`
-    : `I'm playing "${title}" (https://www.youtube.com/watch?v=${videoId})`;
+    ? `Now playing queue sempai, "${title}" (https://www.youtube.com/watch?v=${videoId})`
+    : `I'm playing this song sempai, "${title}" (https://www.youtube.com/watch?v=${videoId})`;
   if (isInteraction) return msg;
 
   channel.send(msg);
